@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="A beautifully animated Hangman word guessing game. Guess the hidden word before running out of lives!" />
+  <title>Hangman – Word Guessing Game</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
+</head>
+<body>
+
+  <!-- Floating Particles -->
+  <div class="particles" id="particles"></div>
+
+  <!-- Confetti Container (for wins) -->
+  <div class="confetti-container" id="confettiContainer"></div>
+
+  <!-- Game Over Overlay -->
+  <div class="game-over-overlay hidden" id="gameOverOverlay">
+    <div class="game-over-content">
+      <div class="game-over-emoji" id="gameOverEmoji">🎉</div>
+      <div class="game-over-title" id="gameOverTitle">You Win!</div>
+      <div class="game-over-word" id="gameOverWord">The word was <span>PYTHON</span></div>
+      <button class="btn-new-game" onclick="startNewGame()">🔄 Play Again</button>
+    </div>
+  </div>
+
+  <div class="container" id="mainContainer">
+    <h1>Hangman</h1>
+    <p class="subtitle">Guess the word</p>
+
+    <div class="card">
+
+      <!-- Hangman SVG Drawing -->
+      <div class="hangman-container">
+        <svg class="hangman-svg" viewBox="0 0 200 220">
+          <!-- Gallows -->
+          <line class="gallows" x1="20" y1="210" x2="100" y2="210" />
+          <line class="gallows" x1="60" y1="210" x2="60" y2="20" />
+          <line class="gallows" x1="60" y1="20" x2="140" y2="20" />
+          <line class="gallows" x1="140" y1="20" x2="140" y2="45" />
+
+          <!-- Body Parts (hidden by default) -->
+          <!-- Head -->
+          <circle class="hangman-part" id="hm-head" cx="140" cy="62" r="17" />
+          <!-- Body -->
+          <line class="hangman-part" id="hm-body" x1="140" y1="79" x2="140" y2="130" />
+          <!-- Left Arm -->
+          <line class="hangman-part" id="hm-left-arm" x1="140" y1="95" x2="115" y2="115" />
+          <!-- Right Arm -->
+          <line class="hangman-part" id="hm-right-arm" x1="140" y1="95" x2="165" y2="115" />
+          <!-- Left Leg -->
+          <line class="hangman-part" id="hm-left-leg" x1="140" y1="130" x2="118" y2="165" />
+          <!-- Right Leg -->
+          <line class="hangman-part" id="hm-right-leg" x1="140" y1="130" x2="162" y2="165" />
+        </svg>
+      </div>
+
+      <!-- Lives (Hearts) -->
+      <div class="lives-container" id="livesContainer"></div>
+
+      <!-- Word Display -->
+      <div class="word-section">
+        <p class="label">Mystery Word</p>
+        <div class="word-display" id="wordDisplay"></div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-item">
+          <span class="stat-label">Wrong</span>
+          <span class="stat-value" id="wrongCount">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Remaining</span>
+          <span class="stat-value" id="remainingCount">6</span>
+        </div>
+      </div>
+
+      <!-- Guessed Letters -->
+      <div class="guessed-section">
+        <p class="label">Guessed Letters</p>
+        <div class="guessed-letters-display" id="guessedLetters"></div>
+      </div>
+
+      <!-- Message -->
+      <p id="message" class="message"></p>
+
+      <!-- On-Screen Keyboard -->
+      <div class="keyboard" id="keyboard"></div>
+
+      <!-- New Game Button -->
+      <button class="btn-new-game" id="newGameBtn" onclick="startNewGame()">🔄 New Game</button>
+
+    </div>
+  </div>
+
+  <script>
+    // ===== Hangman body parts in order =====
+    const HANGMAN_PARTS = [
+      'hm-head', 'hm-body', 'hm-left-arm',
+      'hm-right-arm', 'hm-left-leg', 'hm-right-leg'
+    ];
+
+    const KEYBOARD_ROWS = [
+      'qwertyuiop',
+      'asdfghjkl',
+      'zxcvbnm'
+    ];
+
+    let currentWord = '';
+    let gameOver = false;
+
+    // ===== Generate Floating Particles =====
+    function createParticles() {
+      const container = document.getElementById('particles');
+      for (let i = 0; i < 30; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.animationDuration = (8 + Math.random() * 12) + 's';
+        p.style.animationDelay = (Math.random() * 10) + 's';
+        p.style.width = p.style.height = (2 + Math.random() * 3) + 'px';
+        const colors = ['#818cf8', '#a78bfa', '#c084fc', '#6366f1', '#34d399'];
+        p.style.background = colors[Math.floor(Math.random() * colors.length)];
+        container.appendChild(p);
+      }
+    }
+
+    // ===== Build Keyboard =====
+    function buildKeyboard() {
+      const kb = document.getElementById('keyboard');
+      kb.innerHTML = '';
+      KEYBOARD_ROWS.forEach(row => {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'keyboard-row';
+        row.split('').forEach(letter => {
+          const btn = document.createElement('button');
+          btn.className = 'key-btn';
+          btn.id = 'key-' + letter;
+          btn.textContent = letter;
+          btn.addEventListener('click', () => guessLetter(letter));
+          rowDiv.appendChild(btn);
+        });
+        kb.appendChild(rowDiv);
+      });
+    }
+
+    // ===== Update Hangman SVG =====
+    function updateHangman(wrongCount) {
+      HANGMAN_PARTS.forEach((part, idx) => {
+        const el = document.getElementById(part);
+        if (idx < wrongCount) {
+          el.classList.add('visible');
+        } else {
+          el.classList.remove('visible');
+        }
+      });
+    }
+
+    // ===== Update Lives Hearts =====
+    function updateLives(wrongCount, maxWrong) {
+      const container = document.getElementById('livesContainer');
+      container.innerHTML = '';
+      for (let i = 0; i < maxWrong; i++) {
+        const heart = document.createElement('span');
+        heart.className = 'heart' + (i < wrongCount ? ' lost' : '');
+        heart.textContent = '❤️';
+        heart.style.animationDelay = (i * 0.1) + 's';
+        container.appendChild(heart);
+      }
+    }
+
+    // ===== Update Word Display =====
+    function updateWordDisplay(display) {
+      const container = document.getElementById('wordDisplay');
+      const letters = display.split(' ');
+      container.innerHTML = '';
+      letters.forEach((char, idx) => {
+        const slot = document.createElement('div');
+        slot.className = 'letter-slot';
+        if (char !== '_') {
+          slot.classList.add('revealed');
+          slot.style.animationDelay = (idx * 0.05) + 's';
+        }
+        slot.textContent = char === '_' ? '' : char;
+        container.appendChild(slot);
+      });
+    }
+
+    // ===== Update Guessed Letters =====
+    function updateGuessedLetters(letters, display) {
+      const container = document.getElementById('guessedLetters');
+      container.innerHTML = '';
+      if (!letters.length) {
+        container.innerHTML = '<span style="color:var(--text-muted); font-size:0.85rem;">No guesses yet</span>';
+        return;
+      }
+      const wordLetters = display.replace(/ /g, '').toLowerCase().split('');
+      letters.forEach((letter, idx) => {
+        const chip = document.createElement('span');
+        const isCorrect = wordLetters.includes(letter.toLowerCase());
+        chip.className = 'guessed-letter ' + (isCorrect ? 'correct' : 'wrong');
+        chip.textContent = letter;
+        chip.style.animationDelay = (idx * 0.05) + 's';
+        container.appendChild(chip);
+      });
+    }
+
+    // ===== Update Keyboard State =====
+    function updateKeyboard(guessedLetters, display) {
+      const wordLetters = display.replace(/ /g, '').toLowerCase().split('');
+      guessedLetters.forEach(letter => {
+        const btn = document.getElementById('key-' + letter.toLowerCase());
+        if (btn) {
+          btn.classList.add('used');
+          if (wordLetters.includes(letter.toLowerCase())) {
+            btn.classList.add('correct');
+          } else {
+            btn.classList.add('wrong');
+          }
+        }
+      });
+    }
+
+    // ===== Full UI Update =====
+    function updateUI(data) {
+      updateWordDisplay(data.display);
+      updateHangman(data.wrong_guesses);
+      updateLives(data.wrong_guesses, data.max_wrong);
+      updateGuessedLetters(data.guessed_letters, data.display);
+      updateKeyboard(data.guessed_letters, data.display);
+
+      document.getElementById('wrongCount').textContent = data.wrong_guesses;
+      const remaining = data.max_wrong - data.wrong_guesses;
+      document.getElementById('remainingCount').textContent = remaining;
+
+      // Color the remaining stat
+      const remEl = document.getElementById('remainingCount');
+      remEl.classList.remove('danger', 'warning');
+      if (remaining <= 1) remEl.classList.add('danger');
+      else if (remaining <= 2) remEl.classList.add('warning');
+
+      gameOver = data.game_over;
+    }
+
+    // ===== Load State =====
+    async function loadState() {
+      const res = await fetch('/api/state');
+      const data = await res.json();
+      buildKeyboard();
+      updateUI(data);
+    }
+
+    // ===== Guess Letter =====
+    async function guessLetter(letter) {
+      if (gameOver) return;
+
+      const btn = document.getElementById('key-' + letter);
+      if (btn && btn.classList.contains('used')) return;
+
+      const res = await fetch('/api/guess', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ letter })
+      });
+
+      const data = await res.json();
+      const msgEl = document.getElementById('message');
+      msgEl.textContent = data.message;
+      msgEl.className = 'message';
+      msgEl.style.animation = 'none';
+      msgEl.offsetHeight; // force reflow
+      msgEl.style.animation = '';
+
+      if (data.state) {
+        // Check if it was a wrong guess
+        const prevWrong = parseInt(document.getElementById('wrongCount').textContent);
+        const isWrong = data.state.wrong_guesses > prevWrong;
+
+        buildKeyboard();
+        updateUI(data.state);
+
+        if (isWrong) {
+          // Shake effect
+          const container = document.getElementById('mainContainer');
+          container.classList.add('shake');
+          setTimeout(() => container.classList.remove('shake'), 400);
+        }
+
+        // Check win/lose
+        if (data.state.game_over) {
+          gameOver = true;
+          setTimeout(() => showGameOver(data.state.won, data.message), 600);
+        }
+      }
+    }
+
+    // ===== Show Game Over Overlay =====
+    function showGameOver(won, message) {
+      const overlay = document.getElementById('gameOverOverlay');
+      const emoji = document.getElementById('gameOverEmoji');
+      const title = document.getElementById('gameOverTitle');
+      const wordEl = document.getElementById('gameOverWord');
+
+      if (won) {
+        emoji.textContent = '🎉';
+        title.textContent = 'You Win!';
+        title.className = 'game-over-title win';
+        spawnConfetti();
+      } else {
+        emoji.textContent = '💀';
+        title.textContent = 'Game Over';
+        title.className = 'game-over-title lose';
+      }
+
+      // Extract word from message
+      const wordMatch = message.match(/was\s+(\w+)/i);
+      if (wordMatch) {
+        wordEl.innerHTML = 'The word was <span>' + wordMatch[1].toUpperCase() + '</span>';
+      } else if (won) {
+        wordEl.innerHTML = 'Congratulations!';
+      }
+
+      overlay.classList.remove('hidden');
+    }
+
+    // ===== Confetti =====
+    function spawnConfetti() {
+      const container = document.getElementById('confettiContainer');
+      container.innerHTML = '';
+      const colors = ['#818cf8', '#a78bfa', '#c084fc', '#34d399', '#fbbf24', '#f87171', '#38bdf8'];
+      for (let i = 0; i < 80; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + '%';
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.width = (6 + Math.random() * 8) + 'px';
+        piece.style.height = (6 + Math.random() * 8) + 'px';
+        piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        piece.style.animationDuration = (2 + Math.random() * 3) + 's';
+        piece.style.animationDelay = (Math.random() * 1.5) + 's';
+        container.appendChild(piece);
+      }
+      setTimeout(() => container.innerHTML = '', 5000);
+    }
+
+    // ===== New Game =====
+    async function startNewGame() {
+      const res = await fetch('/api/new', { method: 'POST' });
+      const data = await res.json();
+
+      // Hide overlay
+      document.getElementById('gameOverOverlay').classList.add('hidden');
+      document.getElementById('confettiContainer').innerHTML = '';
+
+      // Reset message
+      const msgEl = document.getElementById('message');
+      msgEl.textContent = '';
+      msgEl.className = 'message';
+
+      // Rebuild keyboard and update UI
+      buildKeyboard();
+      updateUI(data.state);
+      gameOver = false;
+    }
+
+    // ===== Physical Keyboard Support =====
+    document.addEventListener('keydown', (e) => {
+      if (gameOver) return;
+      const letter = e.key.toLowerCase();
+      if (/^[a-z]$/.test(letter)) {
+        guessLetter(letter);
+      }
+    });
+
+    // ===== Init =====
+    createParticles();
+    loadState();
+  </script>
+</body>
+</html>

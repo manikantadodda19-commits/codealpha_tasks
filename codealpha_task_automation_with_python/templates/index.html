@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Task Automation Tool - Automate repetitive tasks like moving files, extracting emails, and scraping web pages with Python." />
+  <title>Task Automator — Python Automation Suite</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+  <!-- Floating Particles -->
+  <div class="particles" id="particles"></div>
+
+  <!-- Grid Overlay -->
+  <div class="grid-overlay"></div>
+
+  <!-- Toast Notifications -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <div class="app-container">
+
+    <!-- Header -->
+    <header class="header">
+      <div class="header-icon">⚡</div>
+      <h1>Task Automator</h1>
+      <p class="subtitle">Python Automation Suite</p>
+    </header>
+
+    <!-- Task Navigation Tabs -->
+    <nav class="task-nav" id="taskNav">
+      <div class="task-tab active" data-tab="move-images" onclick="switchTab('move-images')">
+        <span class="tab-icon">📁</span>
+        <span class="tab-label">Move Images</span>
+      </div>
+      <div class="task-tab" data-tab="extract-emails" onclick="switchTab('extract-emails')">
+        <span class="tab-icon">📧</span>
+        <span class="tab-label">Extract Emails</span>
+      </div>
+      <div class="task-tab" data-tab="scrape-title" onclick="switchTab('scrape-title')">
+        <span class="tab-icon">🌐</span>
+        <span class="tab-label">Scrape Title</span>
+      </div>
+    </nav>
+
+    <!-- ===== Panel 1: Move Images ===== -->
+    <section class="task-panel active" id="panel-move-images">
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-icon blue">📁</div>
+          <div>
+            <h2 class="card-title">Move .JPG Files</h2>
+            <p class="card-desc">Automatically move all .jpg images from a folder to a new subfolder</p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="sourceDirInput">Source Directory</label>
+          <input
+            class="form-input"
+            type="text"
+            id="sourceDirInput"
+            placeholder="e.g. C:\Users\YourName\Pictures"
+            autocomplete="off"
+          />
+          <p class="form-hint">All .jpg and .jpeg files will be moved to a "jpg_files" subfolder</p>
+        </div>
+
+        <button class="btn-action" id="btnMoveImages" onclick="moveImages()">
+          <span class="spinner"></span>
+          <span class="btn-text">🚀 Move Images</span>
+        </button>
+
+        <div class="result-area" id="resultMoveImages">
+          <div class="result-box">
+            <div class="result-header">
+              <span class="result-status" id="moveStatus"></span>
+            </div>
+            <p class="result-message" id="moveMessage"></p>
+            <div class="result-details" id="moveDetails"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Panel 2: Extract Emails ===== -->
+    <section class="task-panel" id="panel-extract-emails">
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-icon purple">📧</div>
+          <div>
+            <h2 class="card-title">Extract Emails</h2>
+            <p class="card-desc">Find and extract all email addresses from text or a .txt file</p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="filePathInput">File Path (optional)</label>
+          <input
+            class="form-input"
+            type="text"
+            id="filePathInput"
+            placeholder="e.g. C:\Users\YourName\data.txt"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="divider">
+          <div class="divider-line"></div>
+          <span class="divider-text">or paste text</span>
+          <div class="divider-line"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="textContentInput">Text Content</label>
+          <textarea
+            class="form-textarea"
+            id="textContentInput"
+            placeholder="Paste text containing email addresses here...&#10;&#10;Example: Contact us at hello@example.com or support@company.org for more info."
+          ></textarea>
+        </div>
+
+        <button class="btn-action" id="btnExtractEmails" onclick="extractEmails()">
+          <span class="spinner"></span>
+          <span class="btn-text">🔍 Extract Emails</span>
+        </button>
+
+        <div class="result-area" id="resultExtractEmails">
+          <div class="result-box">
+            <div class="result-header">
+              <span class="result-status" id="emailStatus"></span>
+            </div>
+            <p class="result-message" id="emailMessage"></p>
+            <div class="result-details" id="emailDetails"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Panel 3: Scrape Title ===== -->
+    <section class="task-panel" id="panel-scrape-title">
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-icon amber">🌐</div>
+          <div>
+            <h2 class="card-title">Scrape Webpage Title</h2>
+            <p class="card-desc">Fetch and save the title of any webpage URL</p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="urlInput">Webpage URL</label>
+          <input
+            class="form-input"
+            type="text"
+            id="urlInput"
+            placeholder="e.g. https://www.python.org"
+            autocomplete="off"
+          />
+          <p class="form-hint">The protocol (https://) will be added automatically if missing</p>
+        </div>
+
+        <button class="btn-action" id="btnScrapeTitle" onclick="scrapeTitle()">
+          <span class="spinner"></span>
+          <span class="btn-text">🌍 Scrape Title</span>
+        </button>
+
+        <div class="result-area" id="resultScrapeTitle">
+          <div class="result-box">
+            <div class="result-header">
+              <span class="result-status" id="scrapeStatus"></span>
+            </div>
+            <div id="scrapeDetails"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+
+  </div>
+
+  <script>
+    // ===== Particles =====
+    (function createParticles() {
+      const container = document.getElementById('particles');
+      const colors = ['#38bdf8', '#818cf8', '#a78bfa', '#34d399', '#fbbf24'];
+      for (let i = 0; i < 30; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        const size = Math.random() * 4 + 2;
+        p.style.width = size + 'px';
+        p.style.height = size + 'px';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.background = colors[Math.floor(Math.random() * colors.length)];
+        p.style.animationDuration = (Math.random() * 15 + 10) + 's';
+        p.style.animationDelay = (Math.random() * 10) + 's';
+        container.appendChild(p);
+      }
+    })();
+
+    // ===== Tab Switching =====
+    function switchTab(tabId) {
+      // Update nav
+      document.querySelectorAll('.task-tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelector(`.task-tab[data-tab="${tabId}"]`).classList.add('active');
+
+      // Update panels with re-animation
+      document.querySelectorAll('.task-panel').forEach(panel => {
+        panel.classList.remove('active');
+        panel.style.animation = 'none';
+      });
+
+      const activePanel = document.getElementById(`panel-${tabId}`);
+      activePanel.style.animation = 'none';
+      activePanel.offsetHeight; // trigger reflow
+      activePanel.style.animation = '';
+      activePanel.classList.add('active');
+    }
+
+    // ===== Toast Notifications =====
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      const icon = type === 'success' ? '✅' : '❌';
+      toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.add('removing');
+        setTimeout(() => toast.remove(), 400);
+      }, 3500);
+    }
+
+    // ===== Button Loading State =====
+    function setLoading(btnId, loading) {
+      const btn = document.getElementById(btnId);
+      if (loading) {
+        btn.classList.add('loading');
+        btn.disabled = true;
+      } else {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+      }
+    }
+
+    // ===== Task 1: Move Images =====
+    async function moveImages() {
+      const sourceDir = document.getElementById('sourceDirInput').value.trim();
+      if (!sourceDir) {
+        showToast('Please enter a source directory path.', 'error');
+        return;
+      }
+
+      setLoading('btnMoveImages', true);
+
+      try {
+        const res = await fetch('/api/move-images', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ source_dir: sourceDir })
+        });
+        const data = await res.json();
+
+        const resultArea = document.getElementById('resultMoveImages');
+        const status = document.getElementById('moveStatus');
+        const message = document.getElementById('moveMessage');
+        const details = document.getElementById('moveDetails');
+
+        resultArea.classList.add('visible');
+        resultArea.style.animation = 'none';
+        resultArea.offsetHeight;
+        resultArea.style.animation = '';
+
+        if (data.success) {
+          status.className = 'result-status success';
+          status.innerHTML = '<span class="pulse-dot"></span> Success';
+          message.textContent = data.message;
+
+          let detailsHTML = '';
+          if (data.moved && data.moved.length > 0) {
+            detailsHTML += '<p class="result-details-title">Moved Files</p><div class="tag-list">';
+            data.moved.forEach(f => {
+              detailsHTML += `<span class="tag file">📄 ${f}</span>`;
+            });
+            detailsHTML += '</div>';
+          }
+          if (data.destination) {
+            detailsHTML += `<div class="saved-badge">📂 Destination: ${data.destination}</div>`;
+          }
+          details.innerHTML = detailsHTML;
+          showToast(`Moved ${data.moved.length} file(s) successfully!`);
+        } else {
+          status.className = 'result-status error';
+          status.innerHTML = '❌ Error';
+          message.textContent = data.message;
+          details.innerHTML = '';
+          showToast(data.message, 'error');
+        }
+      } catch (err) {
+        showToast('Connection error. Is the server running?', 'error');
+      }
+
+      setLoading('btnMoveImages', false);
+    }
+
+    // ===== Task 2: Extract Emails =====
+    async function extractEmails() {
+      const filePath = document.getElementById('filePathInput').value.trim();
+      const textContent = document.getElementById('textContentInput').value.trim();
+
+      if (!filePath && !textContent) {
+        showToast('Please provide a file path or paste some text.', 'error');
+        return;
+      }
+
+      setLoading('btnExtractEmails', true);
+
+      try {
+        const res = await fetch('/api/extract-emails', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ file_path: filePath, text_content: textContent })
+        });
+        const data = await res.json();
+
+        const resultArea = document.getElementById('resultExtractEmails');
+        const status = document.getElementById('emailStatus');
+        const message = document.getElementById('emailMessage');
+        const details = document.getElementById('emailDetails');
+
+        resultArea.classList.add('visible');
+        resultArea.style.animation = 'none';
+        resultArea.offsetHeight;
+        resultArea.style.animation = '';
+
+        if (data.success) {
+          status.className = 'result-status success';
+          status.innerHTML = `<span class="pulse-dot"></span> Found ${data.total} email(s)`;
+          message.textContent = data.message;
+
+          let detailsHTML = '';
+          if (data.emails && data.emails.length > 0) {
+            detailsHTML += '<p class="result-details-title">Extracted Emails</p><div class="tag-list">';
+            data.emails.forEach(email => {
+              detailsHTML += `<span class="tag email">✉️ ${email}</span>`;
+            });
+            detailsHTML += '</div>';
+          }
+          if (data.saved_to) {
+            detailsHTML += `<div class="saved-badge">💾 Saved to: ${data.saved_to}</div>`;
+          }
+          details.innerHTML = detailsHTML;
+          showToast(`Extracted ${data.total} email(s)!`);
+        } else {
+          status.className = 'result-status error';
+          status.innerHTML = '❌ Error';
+          message.textContent = data.message;
+          details.innerHTML = '';
+          showToast(data.message, 'error');
+        }
+      } catch (err) {
+        showToast('Connection error. Is the server running?', 'error');
+      }
+
+      setLoading('btnExtractEmails', false);
+    }
+
+    // ===== Task 3: Scrape Title =====
+    async function scrapeTitle() {
+      const url = document.getElementById('urlInput').value.trim();
+      if (!url) {
+        showToast('Please enter a URL.', 'error');
+        return;
+      }
+
+      setLoading('btnScrapeTitle', true);
+
+      try {
+        const res = await fetch('/api/scrape-title', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: url })
+        });
+        const data = await res.json();
+
+        const resultArea = document.getElementById('resultScrapeTitle');
+        const status = document.getElementById('scrapeStatus');
+        const details = document.getElementById('scrapeDetails');
+
+        resultArea.classList.add('visible');
+        resultArea.style.animation = 'none';
+        resultArea.offsetHeight;
+        resultArea.style.animation = '';
+
+        if (data.success) {
+          status.className = 'result-status success';
+          status.innerHTML = '<span class="pulse-dot"></span> Scraped';
+
+          let detailsHTML = `
+            <div class="scraped-title">${escapeHTML(data.title)}</div>
+            <p class="scraped-url">🔗 ${escapeHTML(data.url)}</p>
+          `;
+
+          if (data.description) {
+            detailsHTML += `<div class="scraped-desc">${escapeHTML(data.description)}</div>`;
+          }
+
+          if (data.saved_to) {
+            detailsHTML += `<div class="saved-badge">💾 Saved to: ${data.saved_to}</div>`;
+          }
+
+          details.innerHTML = detailsHTML;
+          showToast('Page title scraped successfully!');
+        } else {
+          status.className = 'result-status error';
+          status.innerHTML = '❌ Error';
+          details.innerHTML = `<p class="result-message">${escapeHTML(data.message)}</p>`;
+          showToast(data.message, 'error');
+        }
+      } catch (err) {
+        showToast('Connection error. Is the server running?', 'error');
+      }
+
+      setLoading('btnScrapeTitle', false);
+    }
+
+    // ===== Utility: Escape HTML =====
+    function escapeHTML(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // ===== Keyboard Shortcut (Enter to submit) =====
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+        const activePanel = document.querySelector('.task-panel.active');
+        if (activePanel) {
+          const btn = activePanel.querySelector('.btn-action');
+          if (btn && !btn.disabled) btn.click();
+        }
+      }
+    });
+
+    // ===== Ripple Effect on Buttons =====
+    document.querySelectorAll('.btn-action').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        const ripple = document.createElement('span');
+        ripple.className = 'ripple';
+        const rect = this.getBoundingClientRect();
+        ripple.style.left = (e.clientX - rect.left) + 'px';
+        ripple.style.top = (e.clientY - rect.top) + 'px';
+        this.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 600);
+      });
+    });
+
+
+  </script>
+
+</body>
+</html>

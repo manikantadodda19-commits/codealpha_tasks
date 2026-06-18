@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ChatBuddy - A smart rule-based chatbot with beautiful animations">
+    <title>ChatBuddy 🤖 | AI Chatbot</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Animated Background Particles -->
+    <div class="bg-particles" id="particles"></div>
+
+    <!-- Main Chat Container -->
+    <div class="chat-app" id="chatApp">
+        <!-- Header -->
+        <header class="chat-header">
+            <div class="header-left">
+                <div class="bot-avatar pulse-ring">
+                    <span class="avatar-icon">🤖</span>
+                    <span class="status-dot online"></span>
+                </div>
+                <div class="header-info">
+                    <h1>ChatBuddy</h1>
+                    <p class="status-text">
+                        <span class="typing-indicator" id="headerStatus">
+                            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                        </span>
+                        <span id="statusLabel">Online</span>
+                    </p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="header-btn" id="themeToggle" title="Toggle Theme" aria-label="Toggle dark/light theme">
+                    <span id="themeIcon">🌙</span>
+                </button>
+                <button class="header-btn" id="clearChat" title="Clear Chat" aria-label="Clear chat history">
+                    🗑️
+                </button>
+            </div>
+        </header>
+
+        <!-- Chat Messages Area -->
+        <main class="chat-messages" id="chatMessages">
+            <!-- Welcome Message -->
+            <div class="welcome-card" id="welcomeCard">
+                <div class="welcome-emoji bounce-in">🤖</div>
+                <h2 class="welcome-title fade-in">Welcome to ChatBuddy!</h2>
+                <p class="welcome-text fade-in delay-1">I'm your friendly rule-based chatbot. Try saying hello, asking for a joke, or type <strong>help</strong> to see everything I can do!</p>
+                <div class="welcome-chips fade-in delay-2" id="welcomeChips">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Suggestion Chips (shown above input) -->
+        <div class="suggestion-bar" id="suggestionBar">
+            <!-- Populated by JS -->
+        </div>
+
+        <!-- Input Area -->
+        <footer class="chat-input-area">
+            <div class="input-wrapper">
+                <input
+                    type="text"
+                    id="messageInput"
+                    class="chat-input"
+                    placeholder="Type a message..."
+                    autocomplete="off"
+                    maxlength="500"
+                    aria-label="Type your message"
+                >
+                <button class="send-btn" id="sendBtn" title="Send Message" aria-label="Send message">
+                    <svg class="send-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 2L11 13"></path>
+                        <path d="M22 2L15 22L11 13L2 9L22 2Z"></path>
+                    </svg>
+                </button>
+            </div>
+            <p class="input-hint">Press <kbd>Enter</kbd> to send · Try: "hello", "joke", "fact"</p>
+        </footer>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

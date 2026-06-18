@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Track your stock portfolio with real-time calculations and beautiful visualizations.">
+    <title>Stock Portfolio Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Animated background particles -->
+    <div class="bg-particles" id="bgParticles"></div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header" id="appHeader">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo-icon" id="logoIcon">
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                            <path d="M4 24L10 16L16 20L22 10L28 6" stroke="url(#grad1)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M4 24L10 16L16 20L22 10L28 6V24H4Z" fill="url(#grad2)" opacity="0.2"/>
+                            <defs>
+                                <linearGradient id="grad1" x1="4" y1="24" x2="28" y2="6">
+                                    <stop stop-color="#6366f1"/>
+                                    <stop offset="1" stop-color="#06b6d4"/>
+                                </linearGradient>
+                                <linearGradient id="grad2" x1="4" y1="24" x2="28" y2="6">
+                                    <stop stop-color="#6366f1"/>
+                                    <stop offset="1" stop-color="#06b6d4"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1>Stock Portfolio Tracker</h1>
+                        <p class="tagline">Track your investments with precision</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-ghost" id="btnClearPortfolio" onclick="clearPortfolio()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/>
+                        </svg>
+                        Clear All
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Stats Cards Row -->
+            <div class="stats-row" id="statsRow">
+                <div class="stat-card stat-total" id="statTotal">
+                    <div class="stat-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Total Investment</span>
+                        <span class="stat-value" id="totalInvestment">$0.00</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-holdings" id="statHoldings">
+                    <div class="stat-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                            <path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Holdings</span>
+                        <span class="stat-value" id="totalHoldings">0</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-shares" id="statShares">
+                    <div class="stat-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Total Shares</span>
+                        <span class="stat-value" id="totalShares">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Two Column Layout -->
+            <div class="content-grid">
+                <!-- Left Column - Add Stock Form -->
+                <div class="panel panel-form" id="panelForm">
+                    <div class="panel-header">
+                        <h2>Add Stock</h2>
+                        <div class="panel-badge">Quick Add</div>
+                    </div>
+                    <form id="addStockForm" onsubmit="addStock(event)">
+                        <div class="form-group">
+                            <label for="stockInput">Stock Symbol</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="stockInput" placeholder="e.g. AAPL, TSLA, GOOGL" autocomplete="off" required>
+                                <div class="input-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <!-- Autocomplete dropdown -->
+                            <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="quantityInput">Quantity</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="quantityInput" placeholder="Number of shares" min="1" required>
+                                <div class="input-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="4" y="4" width="16" height="16" rx="2"/>
+                                        <path d="M9 9h6M9 13h6M9 17h4"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="price-preview" id="pricePreview">
+                            <span class="preview-label">Estimated Cost</span>
+                            <span class="preview-value" id="previewValue">$0.00</span>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-full" id="btnAddStock">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>
+                            </svg>
+                            Add to Portfolio
+                        </button>
+                    </form>
+
+                    <!-- Available Stocks -->
+                    <div class="available-stocks">
+                        <h3>Available Stocks</h3>
+                        <div class="stock-chips" id="stockChips"></div>
+                    </div>
+                </div>
+
+                <!-- Right Column - Portfolio Table -->
+                <div class="panel panel-portfolio" id="panelPortfolio">
+                    <div class="panel-header">
+                        <h2>Your Portfolio</h2>
+                        <div class="export-buttons">
+                            <button class="btn btn-outline btn-sm" id="btnExportTxt" onclick="exportFile('txt')">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                    <line x1="16" y1="13" x2="8" y2="13"/>
+                                    <line x1="16" y1="17" x2="8" y2="17"/>
+                                    <polyline points="10 9 9 9 8 9"/>
+                                </svg>
+                                .TXT
+                            </button>
+                            <button class="btn btn-outline btn-sm" id="btnExportCsv" onclick="exportFile('csv')">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                    <line x1="16" y1="13" x2="8" y2="13"/>
+                                    <line x1="16" y1="17" x2="8" y2="17"/>
+                                    <polyline points="10 9 9 9 8 9"/>
+                                </svg>
+                                .CSV
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div class="empty-state" id="emptyState">
+                        <div class="empty-icon">
+                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                            </svg>
+                        </div>
+                        <h3>No stocks yet</h3>
+                        <p>Add your first stock to start tracking your portfolio</p>
+                    </div>
+
+                    <!-- Portfolio Table -->
+                    <div class="table-container" id="tableContainer" style="display:none;">
+                        <table class="portfolio-table">
+                            <thead>
+                                <tr>
+                                    <th>Stock</th>
+                                    <th>Price</th>
+                                    <th>Qty</th>
+                                    <th>Total</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="portfolioBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Toast notification -->
+        <div class="toast-container" id="toastContainer"></div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
